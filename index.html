@@ -1,0 +1,1002 @@
+<script type="text/javascript">
+        var gk_isXlsx = false;
+        var gk_xlsxFileLookup = {};
+        var gk_fileData = {};
+        function filledCell(cell) {
+          return cell !== '' && cell != null;
+        }
+        function loadFileData(filename) {
+        if (gk_isXlsx && gk_xlsxFileLookup[filename]) {
+            try {
+                var workbook = XLSX.read(gk_fileData[filename], { type: 'base64' });
+                var firstSheetName = workbook.SheetNames[0];
+                var worksheet = workbook.Sheets[firstSheetName];
+
+                // Convert sheet to JSON to filter blank rows
+                var jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1, blankrows: false, defval: '' });
+                // Filter out blank rows (rows where all cells are empty, null, or undefined)
+                var filteredData = jsonData.filter(row => row.some(filledCell));
+
+                // Heuristic to find the header row by ignoring rows with fewer filled cells than the next row
+                var headerRowIndex = filteredData.findIndex((row, index) =>
+                  row.filter(filledCell).length >= filteredData[index + 1]?.filter(filledCell).length
+                );
+                // Fallback
+                if (headerRowIndex === -1 || headerRowIndex > 25) {
+                  headerRowIndex = 0;
+                }
+
+                // Convert filtered JSON back to CSV
+                var csv = XLSX.utils.aoa_to_sheet(filteredData.slice(headerRowIndex)); // Create a new sheet from filtered array of arrays
+                csv = XLSX.utils.sheet_to_csv(csv, { header: 1 });
+                return csv;
+            } catch (e) {
+                console.error(e);
+                return "";
+            }
+        }
+        return gk_fileData[filename] || "";
+        }
+        </script><!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Alhadi Online Quran Academy</title>
+    <meta name="description" content="Learn Quran online with expert teachers at Alhadi Online Quran Academy. Offering personalized courses for kids and adults.">
+    <link rel="icon" href="/favicon">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Naskh+Arabic&family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #FF4500;
+            --secondary-color: #FFA500;
+            --dark-color: #1A1A1A;
+            --light-color: #F8F9FA;
+            --text-color: #2C2C2C;
+            --text-light: #6C757D;
+            --gradient: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            --reverse-gradient: linear-gradient(135deg, var(--secondary-color), var(--primary-color));
+            --border-radius: 12px;
+            --transition: all 0.3s ease;
+        }
+
+        [data-theme="dark"] {
+            --light-color: #2C2C2C;
+            --text-color: #F8F9FA;
+            --text-light: #CED4DA;
+            --dark-color: #1A1A1A;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: var(--light-color);
+            color: var(--text-color);
+            scroll-behavior: smooth;
+            overflow-x: hidden;
+        }
+
+        /* Navigation Bar */
+        header.nav-header {
+            background: var(--light-color);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            width: 100%;
+        }
+
+        .header-container {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px 16px;
+            max-width: 1280px;
+            margin: 0 auto;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            text-decoration: none;
+            font-family: 'Noto Naskh Arabic', serif;
+            font-size: 24px;
+            font-weight: 800;
+            margin-left: 8px;
+        }
+
+        .logo img {
+            height: 32px;
+            width: auto;
+            vertical-align: middle;
+        }
+
+        .logo span {
+            background: var(--gradient);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        nav {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        nav ul {
+            display: flex;
+            list-style: none;
+            gap: 16px;
+        }
+
+        nav ul li a {
+            text-decoration: none;
+            color: var(--text-color);
+            font-weight: 500;
+            font-size: 14px;
+            padding: 8px 12px;
+            border-radius: var(--border-radius);
+            transition: var(--transition);
+        }
+
+        nav ul li a:hover {
+            background: var(--gradient);
+            color: #fff;
+        }
+
+        .mobile-menu-btn {
+            display: none;
+            background: none;
+            border: none;
+            font-size: 24px;
+            color: var(--text-color);
+            cursor: pointer;
+            margin-right: 8px;
+        }
+
+        #mobile-menu {
+            display: none;
+        }
+
+        /* Main Header Section */
+        header.main-header {
+            background: #fff;
+            padding: 40px 20px;
+            text-align: center;
+            z-index: 1;
+        }
+
+        header.main-header .banner-content {
+            max-width: 600px;
+            margin: 0 auto;
+            color: #2C2C2C; /* Fixed black text for visibility */
+            animation: slideIn 1s ease-in-out;
+        }
+
+        header.main-header h1 {
+            font-family: 'Noto Naskh Arabic', serif;
+            font-size: 2.5rem;
+            font-weight: bold;
+            margin-bottom: 15px;
+            color: #2C2C2C; /* Fixed black text for visibility */
+        }
+
+        header.main-header p {
+            font-size: 1.2rem;
+            margin-bottom: 20px;
+            color: #2C2C2C; /* Fixed black text for visibility */
+        }
+
+        header.main-header .get-started-btn {
+            background: var(--gradient);
+            color: #fff;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 25px;
+            font-size: 1.1rem;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+            transition: background 0.3s ease, transform 0.3s ease;
+        }
+
+        header.main-header .get-started-btn:hover {
+            background: var(--reverse-gradient);
+            transform: scale(1.05);
+        }
+
+        /* Quran Academy Section */
+        .quran-academy-section {
+            background: var(--light-color);
+            padding: 60px 20px;
+            text-align: center;
+        }
+
+        .academy-container h2 {
+            font-family: 'Noto Naskh Arabic', serif;
+            font-size: 2.5rem;
+            color: var(--primary-color);
+            margin-bottom: 20px;
+        }
+
+        .course-tags {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+
+        .course-tags span {
+            background: var(--gradient);
+            color: #fff;
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+        }
+
+        .academy-main {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 40px;
+            align-items: center;
+        }
+
+        .academy-image img {
+            max-width: 350px;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .academy-offer {
+            max-width: 500px;
+            text-align: left;
+        }
+
+        .academy-offer h1 {
+            font-size: 2.5rem;
+            color: var(--primary-color);
+        }
+
+        .academy-offer .highlight {
+            font-size: 3.5rem;
+            color: var(--secondary-color);
+            font-weight: bold;
+        }
+
+        .features h4 {
+            font-size: 1.5rem;
+            color: var(--primary-color);
+            margin-bottom: 10px;
+        }
+
+        .features ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .features li {
+            font-size: 1.1rem;
+            color: var(--text-color);
+            margin-bottom: 8px;
+        }
+
+        .contact a {
+            color: #25D366;
+            text-decoration: none;
+            font-weight: bold;
+        }
+
+        /* About Us Section */
+        .about-us {
+            background: rgba(255, 255, 255, 0.9);
+            padding: 50px;
+            border-radius: 15px;
+            margin: 50px auto;
+            max-width: 1200px;
+            text-align: center;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .about-us h2 {
+            font-family: 'Noto Naskh Arabic', serif;
+            font-size: 2.5rem;
+            color: var(--primary-color);
+            margin-bottom: 20px;
+        }
+
+        .about-us p {
+            font-size: 1.2rem;
+            color: #2C2C2C; /* Fixed black text for visibility */
+            line-height: 1.8;
+        }
+
+        /* Course Cards Section */
+        .course-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 30px;
+            max-width: 1200px;
+            margin: 50px auto;
+        }
+
+        .course-card {
+            background: #fff;
+            border-radius: 15px;
+            padding: 20px;
+            text-align: center;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease;
+        }
+
+        .course-card img {
+            width: 100%;
+            height: 180px;
+            object-fit: cover;
+            border-radius: 10px;
+        }
+
+        .course-card h3 {
+            font-size: 1.8rem;
+            color: var(--primary-color);
+            margin: 15px 0;
+        }
+
+        .course-card p {
+            font-size: 1rem;
+            color: #2C2C2C; /* Fixed black text for visibility */
+            margin-bottom: 15px;
+        }
+
+        .course-card button {
+            background: var(--gradient);
+            color: #fff;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 25px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: background 0.3s ease, transform 0.3s ease;
+        }
+
+        .course-card button:hover {
+            background: var(--reverse-gradient);
+            transform: scale(1.05);
+        }
+
+        .course-card:hover {
+            transform: translateY(-5px);
+        }
+
+        /* Reviews Section */
+        .reviews {
+            background: var(--light-color);
+            padding: 50px 20px;
+            text-align: center;
+        }
+
+        .reviews h2 {
+            font-family: 'Noto Naskh Arabic', serif;
+            font-size: 2.5rem;
+            color: var(--primary-color);
+            margin-bottom: 30px;
+        }
+
+        .review {
+            max-width: 600px;
+            margin: 0 auto 20px;
+            font-size: 1.1rem;
+            color: var(--text-color);
+        }
+
+        .review .stars {
+            color: var(--secondary-color);
+            margin-bottom: 10px;
+        }
+
+        .review p {
+            font-style: italic;
+            margin-bottom: 10px;
+        }
+
+        /* Contact Form Section */
+        .form-container {
+            max-width: 600px;
+            margin: 50px auto;
+            background: #fff;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .form-container h2 {
+            font-family: 'Noto Naskh Arabic', serif;
+            font-size: 2.5rem;
+            color: var(--primary-color);
+            margin-bottom: 20px;
+        }
+
+        form {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        input, select, textarea {
+            padding: 12px;
+            font-size: 1rem;
+            border: 2px solid #ddd;
+            border-radius: 10px;
+            outline: none;
+            transition: border-color 0.3s ease;
+            color: #2C2C2C; /* Fixed black text for visibility */
+        }
+
+        input:focus, select:focus, textarea:focus {
+            border-color: var(--primary-color);
+        }
+
+        button {
+            background: #25D366;
+            color: #fff;
+            padding: 12px;
+            font-size: 1.1rem;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: background 0.3s ease, transform 0.3s ease;
+        }
+
+        button:hover {
+            background: #1ebe57;
+            transform: scale(1.05);
+        }
+
+        /* WhatsApp Floating Button */
+        .whatsapp-float {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 1000;
+            width: 60px;
+            height: 60px;
+        }
+
+        .whatsapp-float img {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+            transition: transform 0.3s ease;
+        }
+
+        .whatsapp-float img:hover {
+            transform: scale(1.1);
+        }
+
+        /* Chat Popup */
+        .chat-popup {
+            position: fixed;
+            bottom: 100px;
+            right: 20px;
+            background: #fff;
+            border-radius: 10px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+            padding: 15px;
+            max-width: 250px;
+            z-index: 9999;
+            display: none;
+        }
+
+        .chat-header {
+            font-weight: bold;
+            font-size: 1rem;
+            color: var(--primary-color);
+            margin-bottom: 10px;
+        }
+
+        .chat-buttons a {
+            display: block;
+            background: #25D366;
+            color: #fff;
+            text-decoration: none;
+            padding: 8px 12px;
+            border-radius: 5px;
+            text-align: center;
+            margin: 5px 0;
+            transition: background 0.3s ease;
+        }
+
+        .chat-buttons a:hover {
+            background: #1ebe57;
+        }
+
+        #chatClose {
+            float: right;
+            cursor: pointer;
+            color: var(--text-light);
+            font-size: 1.2rem;
+        }
+
+        #chatClose:hover {
+            color: var(--primary-color);
+        }
+
+        /* Bottom Buttons */
+        .bottom-buttons {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            display: flex;
+            gap: 12px;
+            z-index: 1000;
+        }
+
+        .theme-toggle, .scroll-to-top {
+            background: var(--gradient);
+            color: #fff;
+            border: none;
+            border-radius: 50%;
+            width: 36px;
+            height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: var(--transition);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        }
+
+        .theme-toggle:hover, .scroll-to-top:hover {
+            background: var(--reverse-gradient);
+            transform: scale(1.1);
+        }
+
+        .scroll-to-top {
+            opacity: 0;
+            visibility: hidden;
+        }
+
+        .scroll-to-top.show {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        /* Footer */
+        footer {
+            background: var(--dark-color);
+            color: #fff;
+            text-align: center;
+            padding: 40px 20px;
+            font-size: 1.1rem;
+        }
+
+        footer a {
+            color: #25D366;
+            text-decoration: none;
+            font-weight: bold;
+        }
+
+        .social-buttons {
+            display: flex;
+            gap: 16px;
+            justify-content: center;
+            margin-top: 2rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .social-button {
+            background: var(--gradient);
+            color: #fff;
+            border: none;
+            border-radius: 50%;
+            width: 36px;
+            height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: var(--transition);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        }
+
+        .social-button:hover {
+            background: var(--reverse-gradient);
+            transform: scale(1.1);
+        }
+
+        /* Animations */
+        @keyframes slideDown {
+            from { transform: translateY(-100%); }
+            to { transform: translateY(0); }
+        }
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateX(-50px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .mobile-menu-btn {
+                display: block;
+            }
+
+            #mobile-menu {
+                display: none;
+                position: absolute;
+                top: 100%;
+                left: 0;
+                right: 0;
+                background: var(--light-color);
+                padding: 20px;
+                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+                flex-direction: column;
+                align-items: flex-start;
+                border-radius: 0 0 12px 12px;
+                border: 1px solid #e0e0e0;
+                width: 100%;
+                box-sizing: border-box;
+                z-index: 999;
+            }
+
+            [data-theme="dark"] #mobile-menu {
+                background: var(--dark-color);
+            }
+
+            #mobile-menu.show {
+                display: flex;
+            }
+
+            #mobile-menu ul {
+                flex-direction: column;
+                gap: 18px;
+                width: 100%;
+            }
+
+            #mobile-menu ul li a {
+                font-size: 18px;
+                padding: 12px 20px;
+                width: 100%;
+                text-align: left;
+                border-radius: 8px;
+            }
+
+            header.main-header {
+                padding: 30px 15px;
+            }
+
+            header.main-header h1 {
+                font-size: 2rem;
+            }
+
+            .course-cards {
+                grid-template-columns: 1fr;
+            }
+
+            .academy-main {
+                flex-direction: column;
+            }
+
+            .form-container {
+                padding: 20px;
+            }
+
+            .bottom-buttons {
+                bottom: 16px;
+                right: 16px;
+                left: 16px;
+                justify-content: flex-end;
+            }
+
+            .theme-toggle, .scroll-to-top, .social-button {
+                width: 32px;
+                height: 32px;
+                font-size: 16px;
+            }
+
+            .social-buttons {
+                gap: 8px;
+                margin-top: 1rem;
+                margin-bottom: 0.25rem;
+            }
+        }
+
+        @media (min-width: 769px) {
+            #mobile-menu {
+                display: flex !important;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .logo {
+                font-size: 20px;
+                margin-left: 0;
+            }
+
+            .logo img {
+                height: 28px;
+            }
+
+            .mobile-menu-btn {
+                margin-right: 0;
+            }
+
+            header.main-header h1 {
+                font-size: 1.8rem;
+            }
+
+            .about-us h2, .reviews h2 {
+                font-size: 2rem;
+            }
+
+            .course-card h3 {
+                font-size: 1.5rem;
+            }
+
+            .form-container form {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+
+<body data-theme="light">
+    <header class="nav-header">
+        <div class="header-container">
+            <a href="#home" class="logo">
+                <img src="/logo" alt="Alhadi Logo">
+                <span>Alhadi Online Quran Academy</span>
+            </a>
+            <button id="mobile-menu-btn" class="mobile-menu-btn">☰</button>
+            <nav id="mobile-menu">
+                <ul>
+                    <li><a href="#home" onclick="document.getElementById('mobile-menu').classList.remove('show');">Home</a></li>
+                    <li><a href="#about" onclick="document.getElementById('mobile-menu').classList.remove('show');">About Us</a></li>
+                    <li><a href="#contact" onclick="document.getElementById('mobile-menu').classList.remove('show');">Contact</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <header class="main-header" id="home">
+        <div class="banner-content">
+            <h1>Alhadi Online Quran Academy</h1>
+            <p>Learn the Holy Quran with expert teachers in an interactive and flexible environment</p>
+            <a href="#contact" class="get-started-btn" onclick="document.getElementById('contact').scrollIntoView();">Get Started</a>
+        </div>
+    </header>
+
+    <section class="quran-academy-section">
+        <div class="academy-container">
+            <h2>Alhadi Online Quran Academy</h2>
+            <div class="course-tags">
+                <span>Kids Qaida</span>
+                <span>Namaz-e-Janaza</span>
+                <span>Hadith</span>
+                <span>Kalma</span>
+                <span>Hifz ul Quran</span>
+                <span>Nazra Quran</span>
+                <span>40 Duas</span>
+                <span>Namaz Learning</span>
+            </div>
+            <div class="academy-main">
+                <div class="academy-image">
+                    <img src="/image1" alt="Quran Academy">
+                </div>
+                <div class="academy-offer">
+                    <h1><span class="highlight">3</span> Days Free Trial</h1>
+                    <div class="features">
+                        <h4>Features</h4>
+                        <ul>
+                            <li>5 Days a Week</li>
+                            <li>30 Minutes Class Duration</li>
+                            <li>All Classes On Time</li>
+                        </ul>
+                    </div>
+                    <p class="contact">📞 Contact: <a href="https://wa.me/923300319172" target="_blank">+923300319172</a></p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="about-us" id="about">
+        <h2>About Us</h2>
+        <p>Alhadi Online Quran Academy is your trusted source for online Quran learning. Led by Qari Zeeshan Hadi, we offer interactive courses for children and adults, focusing on the Quran and its beautiful teachings in an engaging and accessible way.</p>
+    </section>
+
+    <section class="course-cards">
+        <div class="course-card">
+            <img src="/image1" alt="Quran for Kids">
+            <h3>Quran for Kids</h3>
+            <p>Interactive Quran learning for children with expert teachers.</p>
+            <button onclick="document.getElementById('contact').scrollIntoView();">Contact Now</button>
+        </div>
+        <div class="course-card">
+            <img src="/image1" alt="Quran for Adults">
+            <h3>Quran for Adults</h3>
+            <p>In-depth Quranic education and Tafsir for adults of all ages.</p>
+            <button onclick="document.getElementById('contact').scrollIntoView();">Contact Now</button>
+        </div>
+        <div class="course-card">
+            <img src="/image1" alt="Recitation Mastery">
+            <h3>Recitation Mastery</h3>
+            <p>Master the art of Quran recitation with Tajweed and fluency.</p>
+            <button onclick="document.getElementById('contact').scrollIntoView();">Contact Now</button>
+        </div>
+        <div class="course-card">
+            <img src="/image1" alt="Quranic Arabic">
+            <h3>Quranic Arabic</h3>
+            <p>Learn the language of the Quran to deepen your understanding.</p>
+            <button onclick="document.getElementById('contact').scrollIntoView();">Contact Now</button>
+        </div>
+        <div class="course-card">
+            <img src="/image1" alt="Advanced Quran Studies">
+            <h3>Advanced Quran Studies</h3>
+            <p>Deepen your understanding of the Quran with advanced studies.</p>
+            <button onclick="document.getElementById('contact').scrollIntoView();">Contact Now</button>
+        </div>
+        <div class="course-card">
+            <img src="/image1" alt="Online Quran Memorization">
+            <h3>Online Quran Memorization</h3>
+            <p>Memorize the Quran online with a structured program and support.</p>
+            <button onclick="document.getElementById('contact').scrollIntoView();">Contact Now</button>
+        </div>
+    </section>
+
+    <section class="reviews">
+        <h2>What Our Students Say</h2>
+        <div class="review">
+            <div class="stars">★★★★★</div>
+            <p>"The Quran classes at Alhadi Academy are exceptional. The teachers are patient, and my children have learned so much in such a short time!"</p>
+            <p>- Sarah, Parent of Student</p>
+        </div>
+        <div class="review">
+            <div class="stars">★★★★☆</div>
+            <p>"I feel more connected to the Quran now. The online format is convenient, and the support via WhatsApp makes communication seamless!"</p>
+            <p>- Ahmed, Adult Student</p>
+        </div>
+        <div class="review">
+            <div class="stars">★★★★★</div>
+            <p>"Qari Zeeshan Hadi's teaching method is amazing. The classes are engaging, and the WhatsApp support team responds promptly!"</p>
+            <p>- Fatima, Student</p>
+        </div>
+    </section>
+
+    <section class="form-container" id="contact">
+        <h2>Contact Us</h2>
+        <form onsubmit="sendToWhatsApp(event)">
+            <input id="name" type="text" placeholder="Full Name" required>
+            <input id="phone" type="text" placeholder="Phone Number" required>
+            <select id="course" required>
+                <option value="">Select a Course</option>
+                <option value="Quran for Kids">Quran for Kids</option>
+                <option value="Quran for Adults">Quran for Adults</option>
+                <option value="Recitation Mastery">Recitation Mastery</option>
+                <option value="Quranic Arabic">Quranic Arabic</option>
+                <option value="Advanced Quran Studies">Advanced Quran Studies</option>
+                <option value="Online Quran Memorization">Online Quran Memorization</option>
+            </select>
+            <textarea id="message" rows="4" placeholder="Your Message"></textarea>
+            <button type="submit">Send via WhatsApp</button>
+        </form>
+    </section>
+
+    <footer>
+        <div class="social-buttons">
+            <a href="https://www.facebook.com/profile.php?id=100094338249794" target="_blank" class="social-button" title="Follow on Facebook">
+                <i class="fab fa-facebook-f"></i>
+            </a>
+            <a href="https://www.tiktok.com/@zeeshanhadi92" target="_blank" class="social-button" title="Follow on TikTok">
+                <i class="fab fa-tiktok"></i>
+            </a>
+            <a href="https://www.instagram.com/zeeshanhadi512" target="_blank" class="social-button" title="Follow on Instagram">
+                <i class="fab fa-instagram"></i>
+            </a>
+            <a href="https://youtube.com/@qarizeeshanofficial" target="_blank" class="social-button" title="Subscribe on YouTube">
+                <i class="fab fa-youtube"></i>
+            </a>
+        </div>
+        <p>&copy; Alhadi Online Quran Academy | All Rights Reserved 2025</p>
+        <p>Contact Qari Zeeshan Hadi: <a href="https://wa.me/923300319172" target="_blank">+923300319172</a></p>
+    </footer>
+
+    <div class="bottom-buttons">
+        <button class="theme-toggle" onclick="toggleTheme()" title="Toggle Theme"><i class="fa-regular fa-sun"></i></button>
+        <button class="scroll-to-top" onclick="scrollToTop()" title="Back to Top">↑</button>
+    </div>
+
+    <a href="https://wa.me/923300319172" class="whatsapp-float" target="_blank">
+        <img src="https://cdn-icons-png.flaticon.com/512/733/733585.png" alt="WhatsApp" />
+    </a>
+
+    <div class="chat-popup" id="chatPopup">
+        <div class="chat-header">
+            👋 Hi! How can we help?
+            <span id="chatClose">&times;</span>
+        </div>
+        <div class="chat-buttons">
+            <a href="https://wa.me/923300319172?text=I%20have%20a%20question" target="_blank">I have a question</a>
+            <a href="https://wa.me/923300319172?text=Tell%20me%20more" target="_blank">Tell me more</a>
+        </div>
+    </div>
+
+    <script>
+        function sendToWhatsApp(event) {
+            event.preventDefault();
+            const name = document.getElementById('name').value;
+            const course = document.getElementById('course').value;
+            const phone = document.getElementById('phone').value;
+            const message = document.getElementById('message').value;
+            const text = `Assalamu Alaikum,\nName: ${name}\nCourse: ${course}\nPhone: ${phone}\nMessage: ${message}`;
+            const url = `https://wa.me/923300319172?text=${encodeURIComponent(text)}`;
+            window.open(url, '_blank');
+        }
+
+        function toggleMobileMenu(event) {
+            event.preventDefault();
+            const nav = document.getElementById('mobile-menu');
+            nav.classList.toggle('show');
+        }
+
+        function toggleTheme() {
+            const body = document.body;
+            const themeToggle = document.querySelector('.theme-toggle i');
+            const currentTheme = body.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+            body.setAttribute('data-theme', currentTheme);
+            localStorage.setItem('theme', currentTheme);
+            themeToggle.classList.remove(currentTheme === 'dark' ? 'fa-sun' : 'fa-moon');
+            themeToggle.classList.add(currentTheme === 'dark' ? 'fa-moon' : 'fa-sun');
+        }
+
+        function scrollToTop() {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        window.onload = function () {
+            setTimeout(function () {
+                document.getElementById("chatPopup").style.display = "block";
+            }, 5000);
+
+            const savedTheme = localStorage.getItem('theme') || 'light';
+            document.body.setAttribute('data-theme', savedTheme);
+            const themeToggle = document.querySelector('.theme-toggle i');
+            themeToggle.classList.add(savedTheme === 'dark' ? 'fa-moon' : 'fa-sun');
+
+            const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+            if (mobileMenuBtn) {
+                mobileMenuBtn.addEventListener('click', toggleMobileMenu);
+                mobileMenuBtn.addEventListener('touchstart', toggleMobileMenu);
+            }
+
+            const scrollToTopBtn = document.querySelector('.scroll-to-top');
+            window.addEventListener('scroll', () => {
+                if (window.scrollY > 300) {
+                    scrollToTopBtn.classList.add('show');
+                } else {
+                    scrollToTopBtn.classList.remove('show');
+                }
+            });
+        };
+
+        document.getElementById("chatClose").onclick = function () {
+            document.getElementById("chatPopup").style.display = "none";
+        };
+    </script>
+</body>
+</html>
